@@ -52,7 +52,7 @@ head.direction = "stop"
 
 # Obstacles
 obstacles = []
-for _ in range(10):  # Create 5 obstacles
+for _ in range(10):
     obstacle = turtle.Turtle()
     obstacle.shape("square")
     obstacle.color("red")
@@ -160,7 +160,7 @@ def is_food_position_valid(x, y, obstacles, min_distance=50):
     return True
 
 # Function to generate food away from obstacles and walls
-def generate_food_position(wn_width, wn_height, obstacles, margin=40, min_distance_from_obstacles=30):
+def generate_food_position(wn_width, wn_height, obstacles, margin=40, min_distance_from_obstacles=50):
     while True:
         x = random.randint(-wn_width//2 + margin, wn_width//2 - margin)
         y = random.randint(-wn_height//2 + margin, wn_height//2 - margin)
@@ -185,12 +185,15 @@ wn.onkeypress(mute_sound, "x")
 wn.onkeypress(unmute_sound, "c")
 
 # Keyboard bindings
-wn.listen()
+# wn.listen()
 wn.onkeypress(go_up, 'Up')
 wn.onkeypress(go_down, 'Down')
 wn.onkeypress(go_left, 'Left')
 wn.onkeypress(go_right, 'Right')
 
+
+food_x, food_y = generate_food_position(600, 600, obstacles, margin=60)
+food.goto(food_x, food_y)
 
 # Main game loop
 while True:
@@ -241,23 +244,10 @@ while True:
         pen.write("Score: {}  High Score: {}".format(score, high_score), align="center", font=("Courier", 24, "normal")) 
 
 
-    # Check for collision with obstacles
-    for obstacle in obstacles:
-        if head.distance(obstacle) < 20:  # Collision detection
-            head.goto(0, 0)
-            head.direction = "stop"
-            stop_bg_music()
-            collision_sound = pygame.mixer.Sound("sounds/crash.wav")
-            collision_sound.play()
-            time.sleep(2)
-            game_over()
-            head.goto(0, 0)  # Reset position
-            break
-
     # Check for a collision with the food (eating)
     if head.distance(food) < 20:
         # Move the food to a random spot
-        food_x, food_y = generate_food_position(600, 600, obstacles, margin=40)
+        food_x, food_y = generate_food_position(600, 600, obstacles, margin=60)
         food.goto(food_x, food_y)
 
         # Add a segment
@@ -296,7 +286,21 @@ while True:
         y = head.ycor()
         segments[0].goto(x,y)
 
-    move()    
+    move()
+
+    # Check for collision with obstacles
+    for obstacle in obstacles:
+        if head.distance(obstacle) < 20:  # Collision detection
+            head.goto(0, 0)
+            head.direction = "stop"
+            stop_bg_music()
+            collision_sound = pygame.mixer.Sound("sounds/crash.wav")
+            collision_sound.play()
+            time.sleep(2)
+            game_over()
+            head.goto(0, 0)  # Reset position
+            break
+ 
 
     # Check for head collision with the body segments
     for segment in segments:
