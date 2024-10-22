@@ -24,6 +24,8 @@ def stop_bg_music():
     pygame.mixer.music.stop()
 
 
+
+mute = False
 delay = 0.1
 
 # Score
@@ -165,6 +167,23 @@ def generate_food_position(wn_width, wn_height, obstacles, margin=40, min_distan
         if is_food_position_valid(x, y, obstacles, min_distance_from_obstacles):
             return x, y
 
+# Game pause function
+def mute_sound():
+    global mute
+    mute = True
+    stop_bg_music()
+
+# Game resume function
+def unmute_sound():
+    global mute
+    mute = False
+    start_bg_music()
+
+# Bind keys for pause/resume
+wn.listen()
+wn.onkeypress(mute_sound, "x")
+wn.onkeypress(unmute_sound, "c")
+
 # Keyboard bindings
 wn.listen()
 wn.onkeypress(go_up, 'Up')
@@ -178,8 +197,20 @@ while True:
     wn.update()
 
     # Start background music if it is not already playing
-    if not pygame.mixer.music.get_busy():
+    if mute:# not pygame.mixer.music.get_busy():
         start_bg_music()
+
+    # Move the end segments first in reverse order
+    for index in range(len(segments) - 1, 0, -1):
+        x = segments[index-1].xcor()
+        y = segments[index-1].ycor()
+        segments[index].goto(x, y)
+
+    # Move segment 0 to where the head is
+    if len(segments) > 0:
+        x = head.xcor()
+        y = head.ycor()
+        segments[0].goto(x,y)
 
     # Check for a collision with the border
     if head.xcor()>290 or head.xcor()<-290 or head.ycor()>290 or head.ycor()<-290:
